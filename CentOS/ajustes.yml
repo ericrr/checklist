@@ -1,0 +1,40 @@
+---
+- hosts: all
+  become: true
+  
+  vars: 
+    mytemplates: "/var/lib/rundeck/ansible/templates"
+    bkpfile: "/tmp/.bkpfile"
+
+
+  tasks:
+
+    - name: Cria Pasta Backup dos Arquivos
+      file:
+        path: '/tmp/.bkpfile'
+        state: directory
+        mode: 0755
+
+    - name: Desabilita Selinux
+      selinux:
+        state: disabled
+    
+    - name: Desabilita Firewall
+      systemd: 
+        name: firewalld 
+        state: stopped 
+        enabled: no
+
+    -name: Ajusta TimeZone
+      timezone:
+        name: America/Sao_Paulo
+
+    - name: Ajusta o Teclado
+      command: /bin/localectl set-keymap br-abnt2
+
+    - name: Configura DNS
+      resolv_nameservers:
+        - 8.8.8.8
+        - 8.8.4.4
+      resolv_search: localdomain
+
