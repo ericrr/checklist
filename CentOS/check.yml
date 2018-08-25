@@ -4,4 +4,4 @@
 
   tasks:
     - name: Test Ping
-    - action: ping
+      action: ping
