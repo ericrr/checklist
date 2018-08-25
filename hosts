@@ -1,5 +1,8 @@
+[local]
+192.168.1.106
+
 [linux]
-labcentos01 ansible_host=172.18.185.10
+labcentos01 ansible_host=172.18.185.10 ansible_user=root ansible_passwd=123mudar
 
 [labdocker]
 
