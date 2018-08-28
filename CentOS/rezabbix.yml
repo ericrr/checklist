@@ -1,0 +1,15 @@
+---
+- hosts: labcentos03
+  become: true
+
+  tasks:
+
+    - name: Remove Zabbix Agent
+      systemd: 
+        name: zabbix-agent 
+        state: stopped
+    
+    - name: Instala Zabbix
+      yum:
+        name: zabbix-agent
+        state: absent
