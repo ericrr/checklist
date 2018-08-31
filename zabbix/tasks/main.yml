@@ -1,0 +1,48 @@
+---
+# tasks file for zabbix
+- name: Configurar e Instalar Agente Zabbix
+  hosts: all
+  remote_user: become
+
+  handlers:
+  - include: "../handlers/main.yml"
+
+  tasks:
+
+  - name: Adiciona Variaveis
+    include_vars: "../vars/main.yml"
+
+  - name: Instalar Repositorio CentOS
+    get_url: 
+      url: http://repo.zabbix.com/zabbix/3.5/rhel/7/x86_64/zabbix-release-3.5-1.el7.noarch.rpm
+      dest: /tmp/zabbix-release_3.5-1.el7.noarch.rpm
+      mode: 0777
+  
+  - name: Instalar Repositorio Debian
+    get_url:
+      url: http://repo.zabbix.com/zabbix/3.5/debian/pool/main/z/zabbix-release/zabbix-release_3.5-1+stretch_all.deb
+      dest: /tmp/zabbix-release_3.5-1+stretch_all.deb
+      mode: 0777
+
+  - name: Executando zabbix.rpm
+    yum: name=/tmp/zabbix-release_3.5-1.el7.noarch.rpm
+    when: ansible_distribution == 'CentOS'
+
+  - name: Executando zabbix.deb
+    apt: deb=/tmp/zabbix-release_3.5-1+stretch_all.deb
+    when: ansible_distribution == 'Debian'
+
+  - name: Instala Agente Zabbix CentOS
+    yum: name=zabbix-agent state=latest
+    when: ansible_distribution == 'CentOS'
+
+  - name: Instala Agente Zabbix Debian
+    apt: name=zabbix-agent state=latest
+    when: ansible_distribution == 'Debian'
+
+  - name: Preparar arquivo de conf
+    template: src=../templates/zabbix_agentd.conf.j2 dest=/etc/zabbix/zabbix-agentd.conf owner=root group=root mode=0644
+    notify:
+      - Iniciar agente zabbix 
+      
+
