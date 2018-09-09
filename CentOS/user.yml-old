@@ -1,0 +1,58 @@
+---
+- hosts: all
+  user: root
+#  become: true
+
+  vars:
+    include: "../vars/main.yml"
+
+  tasks:
+
+  - name: Create group
+    group:
+      name: {{ item }}
+    loop: {{ user_groups }}
+    when: user_groups
+
+  - name: Create users
+    user: 
+      name: {{ item.username }}
+      shell: "/bin/bash"
+      createhome: yes
+      comment: 'user create with ansible'
+      groups: {{ (user_groups | join('.')) }}
+      generate_ssh_key: {{ user_generate_ssh_key }}
+      shell: {{ user_shell }}
+
+  - name: authorized_key to allow ssh key logins
+    authorized_key:
+      user: {{ user_name }}
+      key: {{ lookup('file', user_local_ssh_key_path )}}
+    when: user_local_ssh_key_path | default(false)
+
+  - name: Enable including file from sudoers.d
+    lineinfile:
+      path: "/etc/sudoers"
+      regexp: "^#includedir /etc/sudoers.d"
+      line: "#includedir /etc/sudoers.d"
+      state: present
+      backup: true
+    when: user_enable_passwordless_sudo
+
+  - name: Disable sudoers.d
+    lineinfile:
+      path: "/etc/sudoers"
+      regexp: "^#includedir /etc/sudoers.d"
+      line: "#includedir /etc/sudoers.d"
+      state: "absent"
+      backup: true
+    when: user_enable_passwordless_suso == false
+
+  - name: Enable passwordless sudo
+    copy:
+      content: "%{{ user_name }} ALL=(ALL) NOPASSWD:ALL"
+      dest: "/etc/sudoers.d/{{ user_name }}"
+      owner: "root"
+      group: "root"
+      mode: "0440"
+    when: user_enable_passwordless_sudo

@@ -1,3 +1,44 @@
 ---
 - hosts: all
+  user: root
 #  become: true
+
+  tasks:
+
+  - name: Include Vars
+    include_vars: "vars/main.yml"
+
+  - name: Create users
+    user: 
+      name: "{{ item.username }}"
+      shell: "/bin/bash"
+      createhome: yes
+      comment: 'user create with ansible'
+    with_items: '{{users}}'
+   
+
+  - name: authorized_key to allow ssh key logins
+    authorized_key:
+      user: "{{ item.username }}"
+      key: "{{ lookup('file', 'vars/{{ item.username }}.pub') }}"
+    with_items: '{{users}}'
+
+#  - name: Enable including file from sudoers.d
+#    lineinfile:
+#      path: "/etc/sudoers"
+#      regexp: "^#includedir /etc/sudoers.d"
+#      line: "#includedir /etc/sudoers.d"
+#      state: present
+#      backup: true
+   
+  - name: Sudoers | Update sudoers file 
+    lineinfile:
+      path: "/etc/sudoers"
+      insertafter: '^# User'
+      line: '{{ item.username }} ALL=ALL NOPASSWD: ALL'
+      regexp: '^{{ item.username }} .*'
+      state: present
+      backup: True
+    when: '{{ item.use_sudo }} == True'
+    with_items: '{{users}}'
+  

@@ -1,0 +1,7 @@
+---
+users:
+  - username: become
+    user_sudo: yes
+ 
+  - username: deploy
+    user_sudo: no
