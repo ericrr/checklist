@@ -1,0 +1,4 @@
+---
+# handlers file for zabbix
+  - name: Iniciar agente zabbix
+    service: name=zabbix-agent state=started enabled=yes
