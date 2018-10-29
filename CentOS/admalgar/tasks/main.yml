@@ -1,0 +1,48 @@
+---
+- hosts: labcentos03
+  become: true
+  
+  vars: 
+    mytemplates: "/var/lib/rundeck/ansible/checklist/templates/"
+    bkpfile: "/tmp/.bkpfile"
+    dns_nameservers: ['192.168.83.76', '8.8.8.8', '8.8.4.4']
+    dns_searchs: ['algar.lab']
+
+  tasks:
+
+    - name: Cria Pasta Backup dos Arquivos
+      file:
+        path: '/tmp/.bkpfile'
+        state: directory
+        mode: 0755
+
+    - name: Verifica se arquivo Config existe - Selinux
+      stat: path=/etc/selinux/config
+      register: file_exist
+
+    - name: Desabilita Selinux
+      selinux:
+        state: disabled
+      when: file_exist.stat.exists
+ 
+    - name: Valida Instalacao do Firewalld
+      stat: path=/usr/bin/firewall-cmd
+      register: fwresult
+
+    - name: Desabilita Firewall
+      systemd:
+        name: firewalld
+        state: stopped
+        enabled: no
+      when: fwresult.stat.exists
+
+    - name: Ajusta TimeZone
+      timezone:
+        name: America/Sao_Paulo
+
+    - name: Ajusta o Teclado
+      command: /bin/localectl set-keymap br-abnt2
+
+    - name: Configura Resolv.conf DNS
+      template:  src={{ mytemplates }}resolv.conf.j2 dest=/etc/resolv.conf owner=root mode=0644 
+#      template:  src={{ mytemplates }}resolv.conf.j2 dest=/etc/resolv.conf owner=root mode=0644 backup=yes

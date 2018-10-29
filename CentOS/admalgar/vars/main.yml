@@ -1,0 +1,4 @@
+---
+# vars file for zabbix
+  zserver: zbserver
+  zserverip: 192.168.83.92
