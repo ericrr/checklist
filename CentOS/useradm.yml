@@ -1,0 +1,15 @@
+---
+- hosts: centos
+  
+  tasks:
+
+    - name: Cria Usuario Adm Linux
+      user: 
+        name: alguser
+        password: "{{ '123mudar' | password_hash('sha512') }}"
+        shell: /bin/bash
+        uid: 500
+        home: /var/lib/alguser
+        append: yes
+  
+  

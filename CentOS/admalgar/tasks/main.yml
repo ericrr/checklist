@@ -10,6 +10,12 @@
 
   tasks:
 
+    - name: Update Linux
+      yum: 
+        name: '*'
+        state: latest
+      when: ansible_distribution =='CentOS' or ansible_distribution =="Red Hat Enterprise Linux"
+
     - name: Cria Pasta Backup dos Arquivos
       file:
         path: '/tmp/.bkpfile'
